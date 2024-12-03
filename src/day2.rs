@@ -3,12 +3,12 @@ use std::slice;
 
 #[aoc(day2, part1)]
 pub fn part1(input: &str) -> u32 {
-    solve::<true>(input)
+    solve::<true>(input.strip_suffix('\n').unwrap_or(input))
 }
 
 #[aoc(day2, part2)]
 pub fn part2(input: &str) -> u32 {
-    solve::<false>(input)
+    solve::<false>(input.strip_suffix('\n').unwrap_or(input))
 }
 
 pub fn solve<const IS_PART1: bool>(input: &str) -> u32 {
@@ -44,16 +44,25 @@ pub fn solve<const IS_PART1: bool>(input: &str) -> u32 {
     res
 }
 
-fn is_inc(numbers: &[u8]) -> (bool, bool) {
-    let amount_of_inc = [numbers[0] < numbers[1], numbers[1] < numbers[2], numbers[2] < numbers[3]].iter().filter(|x| **x).count();
-    let amount_of_dec = [numbers[0] > numbers[1], numbers[1] > numbers[2], numbers[2] > numbers[3]].iter().filter(|x| **x).count();
+fn is_increasing(numbers: &[u8]) -> (bool /* is valid */, bool /* is increasing */) {
+    let amount_of_inc = [
+        numbers[0] < numbers[1],
+        numbers[1] < numbers[2],
+        numbers[2] < numbers[3],
+    ].iter().filter(|x| **x).count();
+    let amount_of_dec = [
+        numbers[0] > numbers[1],
+        numbers[1] > numbers[2],
+        numbers[2] > numbers[3],
+    ].iter().filter(|x| **x).count();
     return (amount_of_inc > 1 || amount_of_dec > 1, amount_of_inc > 1);
 }
+
 fn is_valid_line<const IS_PART1: bool>(numbers: &[u8], can_skip: bool) -> bool {
     let increasing = if IS_PART1 {
         numbers[1] > numbers[0]
     } else {
-        let (valid, increasing) = is_inc(numbers);
+        let (valid, increasing) = is_increasing(numbers);
         if !valid {
             return false;
         }
@@ -78,8 +87,10 @@ fn check_all_numbers<const INCREASING: bool>(numbers: &[u8], mut can_skip: bool)
                     return true
                 };
                 can_skip = false;
-                if is_valid::<INCREASING>(prev, numbers[i + 1]) || ((i == 1 || is_valid::<INCREASING>(numbers[i - 2], cur))
-                    && is_valid::<INCREASING>(cur, numbers[i + 1])) {
+                if is_valid::<INCREASING>(prev, numbers[i + 1]) || (
+                    (i == 1 || is_valid::<INCREASING>(numbers[i - 2], cur))
+                    && is_valid::<INCREASING>(cur, numbers[i + 1])
+                ) {
                     prev = numbers[i + 1];
                     iter.next();
                     continue;
