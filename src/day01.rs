@@ -1,8 +1,17 @@
 use std::ops::Range;
 use std::slice;
 
-#[aoc(day2, part2)]
+#[aoc(day2, part1)]
 pub fn part1(input: &str) -> u32 {
+    solve::<true>(input)
+}
+
+#[aoc(day2, part2)]
+pub fn part2(input: &str) -> u32 {
+    solve::<false>(input)
+}
+
+pub fn solve<const IS_PART1: bool>(input: &str) -> u32 {
     let mut res = 0;
     let mut numbers = [0; 8];
     let start_pointer = numbers.as_mut_ptr();
@@ -16,9 +25,9 @@ pub fn part1(input: &str) -> u32 {
                 num = 0;
             } else if char == b'\n' {
                 *pointer = num;
-                res += is_valid_line(
+                res += is_valid_line::<IS_PART1>(
                     &numbers[..(pointer.offset_from(start_pointer) + 1) as usize],
-                    true
+                    !IS_PART1
                 ) as u32;
                 pointer = start_pointer;
                 num = 0;
@@ -27,9 +36,9 @@ pub fn part1(input: &str) -> u32 {
             }
         }
         *pointer = num;
-        res += is_valid_line(
+        res += is_valid_line::<IS_PART1>(
             &numbers[..(pointer.offset_from(start_pointer) + 1) as usize],
-            true
+            !IS_PART1
         ) as u32;
     }
     res
@@ -40,11 +49,16 @@ fn is_inc(numbers: &[u8]) -> (bool, bool) {
     let amount_of_dec = [numbers[0] > numbers[1], numbers[1] > numbers[2], numbers[2] > numbers[3]].iter().filter(|x| **x).count();
     return (amount_of_inc > 1 || amount_of_dec > 1, amount_of_inc > 1);
 }
-fn is_valid_line(numbers: &[u8], can_skip: bool) -> bool {
-    let (valid, increasing) = is_inc(numbers);
-    if !valid {
-        return false;
-    }
+fn is_valid_line<const IS_PART1: bool>(numbers: &[u8], can_skip: bool) -> bool {
+    let increasing = if IS_PART1 {
+        numbers[1] > numbers[0]
+    } else {
+        let (valid, increasing) = is_inc(numbers);
+        if !valid {
+            return false;
+        }
+        increasing
+    };
     if increasing {
         check_all_numbers::<true>(numbers, can_skip)
     } else {
