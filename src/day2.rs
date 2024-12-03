@@ -1,6 +1,3 @@
-use std::ops::Range;
-use std::slice;
-
 #[aoc(day2, part1)]
 pub fn part1(input: &str) -> u32 {
     solve::<true>(input.strip_suffix('\n').unwrap_or(input))

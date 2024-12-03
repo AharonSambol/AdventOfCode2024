@@ -6,6 +6,11 @@ edition = "2021"
 [lib]
 bench = false
 
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
 [dependencies]
 aoc-runner = "0.3.0"
 aoc-runner-derive = "0.3.0"
